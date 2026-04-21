@@ -21,7 +21,7 @@ export default function ProblemsScreen() {
                 <ThemedText type="subtitle">{problem.title}</ThemedText>
                 <ThemedText>{problem.difficulty}</ThemedText>
               </View>
-
+              <br />
               <View style={styles.tagsRow}>
                 {problem.category.map((tag) => (
                   <View key={tag} style={styles.tag}>

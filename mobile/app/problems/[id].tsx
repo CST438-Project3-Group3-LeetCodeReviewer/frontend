@@ -9,13 +9,14 @@ import {
   View,
 } from 'react-native';
 
+import { formatElapsedTime, getProblemById } from '@/utils/problemHelpers';
 import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 export default function ProblemDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const problem = useMemo(() => MOCK_PROBLEMS.find((p) => p.id === id), [id]);
+  const problem = useMemo(() => getProblemById(id), [id]);
 
   const [code, setCode] = useState(problem?.starterCode ?? '');
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -82,7 +83,7 @@ export default function ProblemDetailScreen() {
 
             <View style={styles.timerCard}>
               <ThemedText type="defaultSemiBold">Timer</ThemedText>
-              <ThemedText>{formatTime(secondsElapsed)}</ThemedText>
+              <ThemedText>{formatElapsedTime(secondsElapsed)}</ThemedText>
             </View>
           </View>
 
