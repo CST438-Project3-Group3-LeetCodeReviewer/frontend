@@ -1,5 +1,6 @@
 import { Problem } from '@/types/problem';
 
+//This is the list of all the problems rendered on the /problems/{id} page
 export const MOCK_PROBLEMS: Problem[] = [
   {
     id: 'two-sum',

@@ -6,6 +6,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+// Shared layout for the tab-based screens in the Expo app.
+// It sets up the bottom tab navigator and configures the screens inside app/(tabs).
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
