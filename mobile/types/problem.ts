@@ -1,3 +1,7 @@
+/**
+ * Shared TypeScript types for coding problems and their examples.
+ * Used by the mock data and problem pages to keep data structure consistent.
+ */
 export type Example = {
   input: string;
   output: string;

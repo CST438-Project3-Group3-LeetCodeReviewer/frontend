@@ -1,5 +1,7 @@
 import { formatElapsedTime, getProblemById } from './problemHelpers';
 
+// Jest unit tests for shared problem detail helpers.
+// Verifies problem lookup results and timer formatting output.
 describe('problemHelpers', () => {
   describe('getProblemById', () => {
     it('returns the matching problem when a valid id is provided', () => {

@@ -14,6 +14,7 @@ import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+//This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const problem = useMemo(() => getProblemById(id), [id]);
@@ -37,6 +38,7 @@ export default function ProblemDetailScreen() {
     return () => clearInterval(timer);
   }, []);
 
+//Creates the timer on the page
   function formatTime(totalSeconds: number) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -72,6 +74,7 @@ export default function ProblemDetailScreen() {
 
   return (
     <>
+      //Grabs the title from mockProblems
       <Stack.Screen options={{ title: problem.title }} />
       <ThemedView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -95,10 +98,10 @@ export default function ProblemDetailScreen() {
             ))}
           </View>
 
+          //displays the problem information from mockProblems
           <Section title="Problem">
             <ThemedText>{problem.description}</ThemedText>
           </Section>
-
           <Section title="Examples">
             {problem.examples.map((example, index) => (
               <View key={index} style={styles.exampleBox}>
@@ -122,6 +125,7 @@ export default function ProblemDetailScreen() {
             ))}
           </Section>
 
+            //text box for inputting your code
           <Section title="Code Editor">
             <TextInput
               multiline
@@ -133,6 +137,7 @@ export default function ProblemDetailScreen() {
               textAlignVertical="top"
             />
 
+            //placeholders for future integrations with code submission information
             <View style={styles.buttonRow}>
               <Pressable style={styles.primaryButton} onPress={handleRunCode}>
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
@@ -176,6 +181,7 @@ function Section({
   );
 }
 
+//styling the page
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {

@@ -5,6 +5,7 @@ import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+//This is the route that displays the all of problems using mockProblems.ts
 export default function ProblemsScreen() {
   return (
     <ThemedView style={styles.screen}>
@@ -14,6 +15,7 @@ export default function ProblemsScreen() {
           Browse a small set of interview-style problems for the MVP.
         </ThemedText>
 
+        //Grabs the info of each problem from mockProblems
         {MOCK_PROBLEMS.map((problem) => (
           <Link key={problem.id} href={`/problems/${problem.id}`} asChild>
             <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
@@ -37,6 +39,7 @@ export default function ProblemsScreen() {
   );
 }
 
+//styling the page
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
