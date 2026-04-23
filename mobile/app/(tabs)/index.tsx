@@ -15,7 +15,7 @@ export default function HomeScreen() {
     const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
 
     try {
-      const response = await fetch(`${apiBaseUrl}/health`);
+      const response = await fetch(`${apiBaseUrl}/api/health`);
       if (!response.ok) {
         setBackendStatus(`Backend unreachable (${response.status})`);
         return;
