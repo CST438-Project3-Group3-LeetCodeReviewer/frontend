@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import {
@@ -54,12 +55,40 @@ export default function ProblemDetailScreen() {
     setComplexityOutput('Mock estimate: Time O(n), Space O(n)');
   }
 
-  function handleSubmit() {
-    setAiFeedbackOutput(
-      'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
-    );
-    Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
+  async function handleSubmit() {
+    // setAiFeedbackOutput(
+    //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
+    // );
+    // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
+  try {
+    const response = await fetch("http://10.0.2.2:8080/submissions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        problemId: id,
+        code: code,
+        userId: 1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Submission failed");
+    }
+
+    const data = await response.json();
+
+    router.push({
+    pathname: "/problems/feedback",
+    params: { submissionId: data.id },
+    });
+
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", "Submission failed");
   }
+}
 
   if (!problem) {
     return (
