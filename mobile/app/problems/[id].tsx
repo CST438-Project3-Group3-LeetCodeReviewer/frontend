@@ -61,7 +61,7 @@ export default function ProblemDetailScreen() {
     // );
     // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
   try {
-    const response = await fetch("http://10.0.2.2:8080/submissions", {
+    const response = await fetch("http://10.0.2.2:8080/api/submissions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,11 +80,11 @@ export default function ProblemDetailScreen() {
     const data = await response.json();
 
     router.push({
-    pathname: "/problems/feedback",
+    pathname: "/(tabs)/feedback",
     params: { submissionId: data.id },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     Alert.alert("Error", "Submission failed");
   }

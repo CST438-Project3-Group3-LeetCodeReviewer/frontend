@@ -15,7 +15,7 @@ export default function FeedbackScreen() {
     async function fetchFeedback() {
       try {
         const res = await fetch(
-          `http://10.0.2.2:8080/submissions/${submissionId}/feedback`
+          `http://10.0.2.2:8080/api/submissions/${submissionId}/feedback`
         );
 
         const data = await res.json();
