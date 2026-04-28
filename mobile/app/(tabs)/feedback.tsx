@@ -1,36 +1,68 @@
-import { View, StyleSheet } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { ThemedText } from "@/components/themed-text";
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 
 export default function FeedbackScreen() {
   const { submissionId } = useLocalSearchParams();
 
-  return (
-    <View style={styles.container}>
-      <ThemedText type="title">Submission Feedback</ThemedText>
+  const [feedback, setFeedback] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-      <ThemedText>Submission ID: {submissionId}</ThemedText>
+  useEffect(() => {
+    async function fetchFeedback() {
+      try {
+        const res = await fetch(
+          `http://10.0.2.2:8080/submissions/${submissionId}/feedback`
+        );
+
+        const data = await res.json();
+
+        // backend returns list → take first item
+        setFeedback(data[0]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchFeedback();
+  }, [submissionId]);
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.center}>
+        <ActivityIndicator size="large" />
+        <ThemedText>Analyzing your code...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!feedback) {
+    return (
+      <ThemedView style={styles.center}>
+        <ThemedText>No feedback available.</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">AI Feedback</ThemedText>
 
       <View style={styles.card}>
         <ThemedText type="subtitle">Score</ThemedText>
-        <ThemedText>85 / 100</ThemedText>
+        <ThemedText>{feedback.score}/100</ThemedText>
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="subtitle">AI Feedback</ThemedText>
-        <ThemedText>
-          Your solution is correct and efficient. Consider optimizing space usage.
-        </ThemedText>
+        <ThemedText type="subtitle">Review</ThemedText>
+        <ThemedText>{feedback.feedbackText}</ThemedText>
       </View>
-
-      <View style={styles.card}>
-        <ThemedText type="subtitle">Suggestions</ThemedText>
-        <ThemedText>
-          • Use a hash map for faster lookups  
-          • Reduce nested loops  
-        </ThemedText>
-      </View>
-    </View>
+    </ThemedView>
   );
 }
 
@@ -40,9 +72,15 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
   card: {
     borderWidth: 1,
-    borderColor: "#3A3A3A",
+    borderColor: '#3A3A3A',
     borderRadius: 12,
     padding: 16,
     gap: 8,
