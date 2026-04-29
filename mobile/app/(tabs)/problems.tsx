@@ -15,7 +15,7 @@ export default function ProblemsScreen() {
           Browse a small set of interview-style problems for the MVP.
         </ThemedText>
 
-        //Grabs the info of each problem from mockProblems
+        {/* //Grabs the info of each problem from mockProblems */}
         {MOCK_PROBLEMS.map((problem) => (
           <Link key={problem.id} href={`/problems/${problem.id}`} asChild>
             <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>

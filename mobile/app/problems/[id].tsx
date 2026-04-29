@@ -60,16 +60,20 @@ export default function ProblemDetailScreen() {
     //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
     // );
     // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
-  try {
-    const response = await fetch("http://10.0.2.2:8080/api/submissions", {
-      method: "POST",
-      headers: {
+    try {
+      // http://10.0.2.2:8080/api/submissions
+      const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
+        method: "POST",
+        headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        problemId: id,
-        code: code,
-        userId: 1,
+        // problemId: id,
+        // code: code,
+        // userId: 1,
+        userId: "some-uuid", // MUST be UUID 
+        feedbackText: "temp feedback",
+        score: 100
       }),
     });
 
@@ -84,11 +88,11 @@ export default function ProblemDetailScreen() {
     params: { submissionId: data.id },
     });
 
-  } catch (error: any) {
-    console.error(error);
-    Alert.alert("Error", "Submission failed");
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Error", "Submission failed");
+    }
   }
-}
 
   if (!problem) {
     return (
@@ -103,7 +107,7 @@ export default function ProblemDetailScreen() {
 
   return (
     <>
-      //Grabs the title from mockProblems
+      {/* //Grabs the title from mockProblems */}
       <Stack.Screen options={{ title: problem.title }} />
       <ThemedView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -127,7 +131,7 @@ export default function ProblemDetailScreen() {
             ))}
           </View>
 
-          //displays the problem information from mockProblems
+          {/* //displays the problem information from mockProblems */}
           <Section title="Problem">
             <ThemedText>{problem.description}</ThemedText>
           </Section>
@@ -154,7 +158,7 @@ export default function ProblemDetailScreen() {
             ))}
           </Section>
 
-            //text box for inputting your code
+            {/* //text box for inputting your code */}
           <Section title="Code Editor">
             <TextInput
               multiline
@@ -166,7 +170,7 @@ export default function ProblemDetailScreen() {
               textAlignVertical="top"
             />
 
-            //placeholders for future integrations with code submission information
+            {/* //placeholders for future integrations with code submission information */}
             <View style={styles.buttonRow}>
               <Pressable style={styles.primaryButton} onPress={handleRunCode}>
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>

@@ -20,8 +20,8 @@ export default function FeedbackScreen() {
 
         const data = await res.json();
 
-        // backend returns list → take first item
-        setFeedback(data[0]);
+        
+        setFeedback(data);
       } catch (err) {
         console.error(err);
       } finally {
