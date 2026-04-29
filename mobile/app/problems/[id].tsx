@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,10 @@ import { formatElapsedTime, getProblemById } from '@/utils/problemHelpers';
 import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 
 //This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
@@ -60,38 +65,101 @@ export default function ProblemDetailScreen() {
     //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
     // );
     // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
+    // try {
+    //   // http://10.0.2.2:8080/api/submissions
+    //   const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
+    //     method: "POST",
+    //     headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     // problemId: id,
+    //     // code: code,
+    //     // userId: 1,
+    //     userId: "some-uuid", // MUST be UUID 
+    //     feedbackText: "temp feedback",
+    //     score: 100
+    //   }),
+    // });
+
+    // if (!response.ok) {
+    //   throw new Error("Submission failed");
+    // }
+
+    // const data = await response.json();
+
+    // router.push({
+    // pathname: "/(tabs)/feedback",
+    // params: { submissionId: data.id },
+    // });
+
+    // } catch (error: any) {
+    //   console.error(error);
+    //   Alert.alert("Error", "Submission failed");
+    // }
+
+  //   try {
+  //   const response = await fetch(`http://10.0.2.2:8080/api/submissions`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       problemId: Number(id),
+  //       code: code,
+  //       userId: 1,
+  //       status: "Submitted",
+  //       timeTaken: secondsElapsed,
+  //     }),
+  //   });
+
+  //   if (!response.ok) {
+  //     const errorText = await response.text();
+  //     throw new Error(`Submission failed: ${response.status} ${errorText}`);
+  //   }
+
+  //   const submission = await response.json();
+
+  //   router.push({
+  //     pathname: "/(tabs)/feedback",
+  //     params: { submissionId: String(submission.id) },
+  //   });
+  // } catch (error: any) {
+  //   console.error(error);
+  //   Alert.alert("Error", "Submission failed. Check the console/logs.");
+  // }
+
     try {
-      // http://10.0.2.2:8080/api/submissions
-      const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
-        method: "POST",
-        headers: {
+    const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+      method: "POST",
+      headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // problemId: id,
-        // code: code,
-        // userId: 1,
-        userId: "some-uuid", // MUST be UUID 
-        feedbackText: "temp feedback",
-        score: 100
+        problemId: Number(id),
+        code: code,
+        userId: 1,
+        status: "Submitted",
+        timeTaken: secondsElapsed,
       }),
     });
 
     if (!response.ok) {
-      throw new Error("Submission failed");
+      const errorText = await response.text();
+      throw new Error(`Submission failed: ${response.status} ${errorText}`);
     }
 
-    const data = await response.json();
+    const submission = await response.json();
 
     router.push({
-    pathname: "/(tabs)/feedback",
-    params: { submissionId: data.id },
+      pathname: "/(tabs)/feedback",
+      params: { submissionId: String(submission.id) },
     });
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert("Error", "Submission failed. Check the console.");
+  }
 
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Error", "Submission failed");
-    }
   }
 
   if (!problem) {
@@ -190,9 +258,9 @@ export default function ProblemDetailScreen() {
             <ThemedText>{complexityOutput}</ThemedText>
           </Section>
 
-          <Section title="AI Feedback">
+          {/* <Section title="AI Feedback">
             <ThemedText>{aiFeedbackOutput}</ThemedText>
-          </Section>
+          </Section> */}
         </ScrollView>
       </ThemedView>
     </>

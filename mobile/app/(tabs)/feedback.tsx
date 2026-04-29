@@ -1,9 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator,Platform ,StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
+
 
 export default function FeedbackScreen() {
   const { submissionId } = useLocalSearchParams();
@@ -11,23 +16,47 @@ export default function FeedbackScreen() {
   const [feedback, setFeedback] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchFeedback() {
-      try {
-        const res = await fetch(
-          `http://10.0.2.2:8080/api/submissions/${submissionId}/feedback`
-        );
+  // useEffect(() => {
+  //   async function fetchFeedback() {
+  //     try {
+  //       const res = await fetch(
+  //         `http://10.0.2.2:8080/submissions/${submissionId}/feedback`
+  //       );
 
-        const data = await res.json();
+  //       const data = await res.json();
 
         
-        setFeedback(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+  //       setFeedback(data);
+  //     } catch (err) {
+  //       console.error(err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+
+  //   fetchFeedback();
+  // }, [submissionId]);
+  useEffect(() => {
+  async function fetchFeedback() {
+    try {
+      if (!submissionId) return;
+
+      const res = await fetch(
+        `${API_BASE_URL}/submissions/${submissionId}/feedback`
+      );
+
+      if (!res.ok) {
+        throw new Error(`Feedback request failed: ${res.status}`);
       }
+
+      const data = await res.json();
+      setFeedback(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  }
 
     fetchFeedback();
   }, [submissionId]);
