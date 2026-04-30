@@ -20,15 +20,41 @@ export default function LoginScreen() {
     }
   };
 
+  const syncUserToBackend = async (provider: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const BACKEND_URL = 'http://localhost:8080';
+      const response = await fetch(`${BACKEND_URL}/auth/sync-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          fullName: user.user_metadata?.full_name || user.email,
+          oauthProvider: provider,
+        }),
+      });
+
+      if (response.ok) {
+        router.replace('/(tabs)');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: 'https://dingo-dime-barrel.ngrok-free.dev/',
         },
       });
       if (error) console.error('Google login error:', error);
+      else syncUserToBackend('google');
     } catch (error) {
       console.error('Error:', error);
     }
@@ -36,13 +62,14 @@ export default function LoginScreen() {
 
   const handleGithubLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
           redirectTo: 'https://dingo-dime-barrel.ngrok-free.dev/',
         },
       });
       if (error) console.error('GitHub login error:', error);
+      else syncUserToBackend('github');
     } catch (error) {
       console.error('Error:', error);
     }
