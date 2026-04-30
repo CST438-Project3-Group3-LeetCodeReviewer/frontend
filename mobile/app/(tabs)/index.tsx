@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [backendStatus, setBackendStatus] = useState('Not checked');
   const [isCheckingBackend, setIsCheckingBackend] = useState(false);
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.replace('/login');
+  }
 
   async function checkBackendStatus() {
     setIsCheckingBackend(true);
@@ -64,6 +72,20 @@ export default function HomeScreen() {
             </ThemedText>
           </Pressable>
         </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleLogout}
+            style={({ pressed }) => [
+              styles.logoutButton,
+              pressed && styles.buttonPressed,
+            ]}>
+            <ThemedText type="defaultSemiBold" style={styles.logoutText}>
+              Logout
+            </ThemedText>
+          </Pressable>
+        </ThemedView>
       </ScrollView>
     </ThemedView>
   );
@@ -98,5 +120,18 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.6,
+  },
+  logoutButton: {
+    marginTop: 8,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#d32f2f',
+    alignItems: 'center',
+    backgroundColor: 'rgba(211, 47, 47, 0.1)',
+  },
+  logoutText: {
+    color: '#d32f2f',
   },
 });
