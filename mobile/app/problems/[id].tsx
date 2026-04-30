@@ -30,6 +30,7 @@ export default function ProblemDetailScreen() {
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
   const [aiFeedbackOutput, setAiFeedbackOutput] = useState('AI feedback placeholder.');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!problem) return;
@@ -61,105 +62,58 @@ export default function ProblemDetailScreen() {
   }
 
   async function handleSubmit() {
-    // setAiFeedbackOutput(
-    //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
-    // );
-    // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
-    // try {
-    //   // http://10.0.2.2:8080/api/submissions
-    //   const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
-    //     method: "POST",
-    //     headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     // problemId: id,
-    //     // code: code,
-    //     // userId: 1,
-    //     userId: "some-uuid", // MUST be UUID 
-    //     feedbackText: "temp feedback",
-    //     score: 100
-    //   }),
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error("Submission failed");
-    // }
-
-    // const data = await response.json();
-
-    // router.push({
-    // pathname: "/(tabs)/feedback",
-    // params: { submissionId: data.id },
-    // });
-
-    // } catch (error: any) {
-    //   console.error(error);
-    //   Alert.alert("Error", "Submission failed");
-    // }
-
-  //   try {
-  //   const response = await fetch(`http://10.0.2.2:8080/api/submissions`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       problemId: Number(id),
-  //       code: code,
-  //       userId: 1,
-  //       status: "Submitted",
-  //       timeTaken: secondsElapsed,
-  //     }),
-  //   });
-
-  //   if (!response.ok) {
-  //     const errorText = await response.text();
-  //     throw new Error(`Submission failed: ${response.status} ${errorText}`);
-  //   }
-
-  //   const submission = await response.json();
-
-  //   router.push({
-  //     pathname: "/(tabs)/feedback",
-  //     params: { submissionId: String(submission.id) },
-  //   });
-  // } catch (error: any) {
-  //   console.error(error);
-  //   Alert.alert("Error", "Submission failed. Check the console/logs.");
-  // }
-
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/submissions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        problemId: Number(id),
-        code: code,
-        userId: 1,
-        status: "Submitted",
-        timeTaken: secondsElapsed,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Submission failed: ${response.status} ${errorText}`);
+    if (!code || code.trim().length < 10) {
+      Alert.alert('Incomplete', 'Please write a more substantial solution before submitting.');
+      return;
     }
 
-    const submission = await response.json();
+    setIsSubmitting(true);
 
-    router.push({
-      pathname: "/(tabs)/feedback",
-      params: { submissionId: String(submission.id) },
-    });
-  } catch (error: any) {
-    console.error(error);
-    Alert.alert("Error", "Submission failed. Check the console.");
-  }
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemId: Number(id) || 1, // Fallback for testing
+          code: code,
+          userId: 1, // Hardcoded user for now
+          status: "Submitted",
+          timeTaken: secondsElapsed,
+        }),
+        buttonDisabled: {
+    opacity: 0.5,
+  },
+});
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Submission failed: ${response.status} ${errorText}`);
+      }
+
+      const submission = await response.json();
+
+      Alert.alert('Success', 'Your solution has been submitted and analyzed!', [
+        {
+          text: 'View Feedback',
+          onPress: () => {
+            router.push({
+              pathname: "/(tabs)/feedback",
+              params: { submissionId: String(submission.id) },
+              buttonDisabled: {
+    opacity: 0.5,
+  },
+});
+          }
+        }
+      ]);
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Submission Error", "Could not connect to the backend. Is your server running?");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (!problem) {
@@ -244,8 +198,14 @@ export default function ProblemDetailScreen() {
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
               </Pressable>
 
-              <Pressable style={styles.secondaryButton} onPress={handleSubmit}>
-                <ThemedText type="defaultSemiBold">Submit</ThemedText>
+              <Pressable
+                style={[styles.secondaryButton, isSubmitting && styles.buttonDisabled]}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                <ThemedText type="defaultSemiBold">
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </ThemedText>
               </Pressable>
             </View>
           </Section>
