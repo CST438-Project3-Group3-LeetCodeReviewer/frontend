@@ -14,6 +14,9 @@ import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
+//This is the route that displays the problems list and uses mockProblems.ts
+//It also uses the problemHelpers.ts to get the problem by id
+
 const DIFFICULTY_OPTIONS = ['All', 'Easy', 'Medium', 'Hard'] as const;
 const SORT_OPTIONS = [
   { label: 'Number (Ascending)', value: 'number-asc' },
@@ -50,9 +53,14 @@ export default function ProblemsScreen() {
     const trimmedQuery = searchQuery.trim().toLowerCase();
 
     const filtered = MOCK_PROBLEMS.filter((problem) => {
+      // Search, difficulty, and category combine with AND. Only one category may be active;
+      // selectedCategory === null means no category filter.
       const matchesSearch =
         trimmedQuery.length === 0 ||
-        problem.title.toLowerCase().includes(trimmedQuery);
+        problem.title.toLowerCase().includes(trimmedQuery) ||
+        problem.category.some((c) =>
+          c.toLowerCase().includes(trimmedQuery),
+        );
 
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
@@ -91,6 +99,7 @@ export default function ProblemsScreen() {
     problemNumberMap,
   ]);
 
+  /** One active category at a time; tap again to clear. Tapping a different category switches. */
   const toggleCategoryFilter = (category: string) => {
     setSelectedCategory((current) => (current === category ? null : category));
   };
@@ -198,7 +207,7 @@ export default function ProblemsScreen() {
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search by problem title"
+            placeholder="Search by title or tag"
             placeholderTextColor="#888"
             style={styles.searchInput}
             returnKeyType="search"
@@ -295,19 +304,17 @@ export default function ProblemsScreen() {
             const problemNumber = problemNumberMap.get(problem.id) ?? 0;
 
             return (
-              <Pressable
-                key={problem.id}
-                onPress={() => router.push(`/problems/${problem.id}`)}
-                style={({ pressed }) => [
-                  styles.card,
-                  pressed && styles.cardPressed,
-                ]}>
-                <View style={styles.cardHeader}>
-                  <ThemedText type="subtitle">
-                    {problemNumber}. {problem.title}
-                  </ThemedText>
-                  <ThemedText>{problem.difficulty}</ThemedText>
-                </View>
+              <View key={problem.id} style={styles.card}>
+                <Pressable
+                  onPress={() => router.push(`/problems/${problem.id}`)}
+                  style={({ pressed }) => [pressed && styles.cardPressed]}>
+                  <View style={styles.cardHeader}>
+                    <ThemedText type="subtitle">
+                      {problemNumber}. {problem.title}
+                    </ThemedText>
+                    <ThemedText>{problem.difficulty}</ThemedText>
+                  </View>
+                </Pressable>
 
                 <View style={styles.tagsRow}>
                   {problem.category.map((tag) => {
@@ -316,10 +323,7 @@ export default function ProblemsScreen() {
                     return (
                       <Pressable
                         key={tag}
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          toggleCategoryFilter(tag);
-                        }}
+                        onPress={() => toggleCategoryFilter(tag)}
                         style={({ pressed }) => [
                           styles.tag,
                           isActive && styles.tagActive,
@@ -332,7 +336,7 @@ export default function ProblemsScreen() {
                     );
                   })}
                 </View>
-              </Pressable>
+              </View>
             );
           })
         )}
