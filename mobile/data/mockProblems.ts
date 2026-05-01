@@ -31,7 +31,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'group-anagrams',
     title: 'Group Anagrams',
     difficulty: 'Medium',
-    category: ['Array', 'Hash Map'],
+    category: ['Array', 'Hash Map', 'String', 'Sorting'],
     description:
       'Given an array of strings strs, group the anagrams together. You can return the answer in any order.',
     examples: [
@@ -57,7 +57,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'shortest-subarray-with-sum-at-least-k',
     title: 'Shortest Subarray with Sum at Least K',
     difficulty: 'Hard',
-    category: ['Array', 'Hash Map'],
+    category: ['Array', 'Hash Map', 'Binary Search', 'Queue', 'Sliding Window'],
     description:
       'Given an integer array nums and an integer k, return the length of the shortest non-empty subarray of nums with a sum of at least k. If there is no such subarray, return -1. A subarray is a contiguous part of an array.',
     examples: [
@@ -107,7 +107,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: '3sum',
     title: '3Sum',
     difficulty: 'Medium',
-    category: ['Array', 'Two Pointers'],
+    category: ['Array', 'Two Pointers', 'Sorting'],
     description:
       'Given an integer array nums, return all the unique triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, j != k, and nums[i] + nums[j] + nums[k] == 0. The solution set must not contain duplicate triplets.',
     examples: [
@@ -132,7 +132,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'trapping-rain-water',
     title: 'Trapping Rain Water',
     difficulty: 'Hard',
-    category: ['Array', 'Two Pointers'],
+    category: ['Array', 'Two Pointers', 'Stack', 'Dynamic Programming'],
     description:
       'Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water can be trapped after raining.',
     examples: [
@@ -157,7 +157,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'longest-harmonious-subsequence',
     title: 'Longest Harmonious Subsequence',
     difficulty: 'Easy',
-    category: ['Array', 'Sliding Window'],
+    category: ['Array', 'Sliding Window', 'Hash Map', 'Sorting'],
     description:
       'We define a harmonious array as an array where the difference between its maximum value and its minimum value is exactly 1. Given an integer array nums, return the length of its longest harmonious subsequence among all possible subsequences.',
     examples: [
@@ -182,7 +182,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'longest-substring-without-repeating-characters',
     title: 'Longest Substring Without Repeating Characters',
     difficulty: 'Medium',
-    category: ['String', 'Sliding Window'],
+    category: ['String', 'Sliding Window', 'Hash Map'],
     description:
       'Given a string s, find the length of the longest substring without repeating characters.',
     examples: [
@@ -207,7 +207,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'smallest-range-covering-elements-from-k-lists',
     title: 'Smallest Range Covering Elements from K Lists',
     difficulty: 'Hard',
-    category: ['Array', 'Sliding Window', 'Heap'],
+    category: ['Array', 'Sliding Window', 'Heap', 'Hash Map', 'Sorting'],
     description:
       'You have k lists of sorted integers in non-decreasing order. Find the smallest range that includes at least one number from each of the k lists. If there is more than one such range, return the one with the smallest left endpoint.',
     examples: [
@@ -232,7 +232,7 @@ export const MOCK_PROBLEMS: Problem[] = [
     id: 'binary-tree-inorder-traversal',
     title: 'Binary Tree Inorder Traversal',
     difficulty: 'Easy',
-    category: ['Tree', 'Tree/Graph Traversal'],
+    category: ['Tree', 'Tree/Graph Traversal', 'Stack', 'Depth-First Search'],
     description:
       'Given the root of a binary tree, return the inorder traversal of its nodes\' values.',
     examples: [
@@ -272,7 +272,7 @@ class Solution {
     id: 'number-of-islands',
     title: 'Number of Islands',
     difficulty: 'Medium',
-    category: ['Matrix', 'Tree/Graph Traversal'],
+    category: ['Matrix', 'Tree/Graph Traversal', 'Array', 'Depth-First Search', 'Breadth-First Search'],
     description:
       'Given an m x n 2D binary grid grid which represents a map of 1\'s (land) and 0\'s (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are surrounded by water.',
     examples: [
@@ -297,7 +297,7 @@ class Solution {
     id: 'word-ladder',
     title: 'Word Ladder',
     difficulty: 'Hard',
-    category: ['String', 'Tree/Graph Traversal'],
+    category: ['String', 'Tree/Graph Traversal', 'Breadth-First Search', 'Hash Map'],
     description:
       'A transformation sequence from beginWord to endWord using a dictionary wordList is a sequence of words beginWord -> s1 -> s2 -> ... -> sk such that every adjacent pair of words differs by a single letter, every intermediate word is in wordList, and sk == endWord. Return the number of words in the shortest transformation sequence, or 0 if no such sequence exists.',
     examples: [
@@ -372,7 +372,7 @@ class Solution {
     id: 'median-of-two-sorted-arrays',
     title: 'Median of Two Sorted Arrays',
     difficulty: 'Hard',
-    category: ['Array', 'Binary Search'],
+    category: ['Array', 'Binary Search', 'Divide and Conquer'],
     description:
       'Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays. The overall run time complexity should be O(log (m + n)).',
     examples: [
@@ -397,7 +397,7 @@ class Solution {
     id: 'kth-largest-element-in-a-stream',
     title: 'Kth Largest Element in a Stream',
     difficulty: 'Easy',
-    category: ['Heap', 'Priority Queue'],
+    category: ['Heap', 'Priority Queue', 'Design', 'Data Stream', 'Binary Search', 'Tree'],
     description:
       'Design a class to find the kth largest element in a stream. Note that it is the kth largest element in the sorted order, not the kth distinct element. Implement the KthLargest class with a constructor and an add method.',
     examples: [
@@ -427,7 +427,7 @@ class Solution {
     id: 'top-k-frequent-elements',
     title: 'Top K Frequent Elements',
     difficulty: 'Medium',
-    category: ['Array', 'Heap'],
+    category: ['Array', 'Heap', 'Sorting', 'Hash Map'],
     description:
       'Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.',
     examples: [
@@ -452,7 +452,7 @@ class Solution {
     id: 'merge-k-sorted-lists',
     title: 'Merge k Sorted Lists',
     difficulty: 'Hard',
-    category: ['Linked List', 'Heap'],
+    category: ['Linked List', 'Heap', 'Sorting', 'Divide and Conquer'],
     description:
       'You are given an array of k linked-lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.',
     examples: [
