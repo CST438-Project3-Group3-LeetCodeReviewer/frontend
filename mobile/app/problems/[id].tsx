@@ -19,8 +19,10 @@ const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 
-// Replace this with the authenticated user's real UUID.
-// Using an integer like 1 is incorrect because your schema expects UUID. 
+// Temporary demo user ID for local/testing submissions.
+// Once auth/session user data is connected, remove this constant and
+// replace `userId: DEMO_USER_ID` in the submissionPayload (around line 85)
+// with the authenticated user's real UUID.
 const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
 
 // This is the route that displays the individual problems by id and uses mockProblems.ts
