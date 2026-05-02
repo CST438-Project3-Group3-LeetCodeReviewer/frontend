@@ -3,6 +3,7 @@ import { Problem } from '@/types/problem';
 // This is the list of all the problems rendered on the /problems/{id} page
 export const MOCK_PROBLEMS: Problem[] = [
   {
+    dbId: 1,
     id: 'two-sum',
     title: 'Two Sum',
     difficulty: 'Easy',
@@ -28,6 +29,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 4,
     id: 'group-anagrams',
     title: 'Group Anagrams',
     difficulty: 'Medium',
@@ -54,6 +56,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 5,
     id: 'shortest-subarray-with-sum-at-least-k',
     title: 'Shortest Subarray with Sum at Least K',
     difficulty: 'Hard',
@@ -79,6 +82,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 6,
     id: 'valid-palindrome',
     title: 'Valid Palindrome',
     difficulty: 'Easy',
@@ -89,7 +93,8 @@ export const MOCK_PROBLEMS: Problem[] = [
       {
         input: 's = "A man, a plan, a canal: Panama"',
         output: 'true',
-        explanation: 'After filtering and lowercasing, the string becomes "amanaplanacanalpanama", which is a palindrome.',
+        explanation:
+          'After filtering and lowercasing, the string becomes "amanaplanacanalpanama", which is a palindrome.',
       },
     ],
     hints: [
@@ -104,6 +109,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 7,
     id: '3sum',
     title: '3Sum',
     difficulty: 'Medium',
@@ -129,6 +135,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 8,
     id: 'trapping-rain-water',
     title: 'Trapping Rain Water',
     difficulty: 'Hard',
@@ -154,6 +161,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 9,
     id: 'longest-harmonious-subsequence',
     title: 'Longest Harmonious Subsequence',
     difficulty: 'Easy',
@@ -179,6 +187,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 10,
     id: 'longest-substring-without-repeating-characters',
     title: 'Longest Substring Without Repeating Characters',
     difficulty: 'Medium',
@@ -204,6 +213,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 11,
     id: 'smallest-range-covering-elements-from-k-lists',
     title: 'Smallest Range Covering Elements from K Lists',
     difficulty: 'Hard',
@@ -214,7 +224,8 @@ export const MOCK_PROBLEMS: Problem[] = [
       {
         input: 'nums = [[4,10,15,24,26],[0,9,12,20],[5,18,22,30]]',
         output: '[20,24]',
-        explanation: 'The range [20,24] includes 24 from the first list, 20 from the second, and 22 from the third.',
+        explanation:
+          'The range [20,24] includes 24 from the first list, 20 from the second, and 22 from the third.',
       },
     ],
     hints: [
@@ -229,17 +240,19 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
+    dbId: 12,
     id: 'binary-tree-inorder-traversal',
     title: 'Binary Tree Inorder Traversal',
     difficulty: 'Easy',
     category: ['Tree', 'Tree/Graph Traversal', 'Stack', 'Depth-First Search'],
     description:
-      'Given the root of a binary tree, return the inorder traversal of its nodes\' values.',
+      "Given the root of a binary tree, return the inorder traversal of its nodes' values.",
     examples: [
       {
         input: 'root = [1,null,2,3]',
         output: '[1,3,2]',
-        explanation: 'Inorder traversal visits left subtree, then node, then right subtree.',
+        explanation:
+          'Inorder traversal visits left subtree, then node, then right subtree.',
       },
     ],
     hints: [
@@ -269,15 +282,23 @@ class Solution {
 }`,
   },
   {
+    dbId: 13,
     id: 'number-of-islands',
     title: 'Number of Islands',
     difficulty: 'Medium',
-    category: ['Matrix', 'Tree/Graph Traversal', 'Array', 'Depth-First Search', 'Breadth-First Search'],
+    category: [
+      'Matrix',
+      'Tree/Graph Traversal',
+      'Array',
+      'Depth-First Search',
+      'Breadth-First Search',
+    ],
     description:
-      'Given an m x n 2D binary grid grid which represents a map of 1\'s (land) and 0\'s (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are surrounded by water.',
+      "Given an m x n 2D binary grid grid which represents a map of 1's (land) and 0's (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically. You may assume all four edges of the grid are surrounded by water.",
     examples: [
       {
-        input: 'grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
+        input:
+          'grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]',
         output: '1',
         explanation: 'All connected land cells form one island.',
       },
@@ -294,6 +315,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 14,
     id: 'word-ladder',
     title: 'Word Ladder',
     difficulty: 'Hard',
@@ -302,9 +324,11 @@ class Solution {
       'A transformation sequence from beginWord to endWord using a dictionary wordList is a sequence of words beginWord -> s1 -> s2 -> ... -> sk such that every adjacent pair of words differs by a single letter, every intermediate word is in wordList, and sk == endWord. Return the number of words in the shortest transformation sequence, or 0 if no such sequence exists.',
     examples: [
       {
-        input: 'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]',
+        input:
+          'beginWord = "hit", endWord = "cog", wordList = ["hot","dot","dog","lot","log","cog"]',
         output: '5',
-        explanation: 'One shortest sequence is "hit" -> "hot" -> "dot" -> "dog" -> "cog".',
+        explanation:
+          'One shortest sequence is "hit" -> "hot" -> "dot" -> "dog" -> "cog".',
       },
     ],
     hints: [
@@ -319,6 +343,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 3,
     id: 'binary-search',
     title: 'Binary Search',
     difficulty: 'Easy',
@@ -344,6 +369,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 15,
     id: 'search-in-rotated-sorted-array',
     title: 'Search in Rotated Sorted Array',
     difficulty: 'Medium',
@@ -369,6 +395,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 16,
     id: 'median-of-two-sorted-arrays',
     title: 'Median of Two Sorted Arrays',
     difficulty: 'Hard',
@@ -394,6 +421,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 17,
     id: 'kth-largest-element-in-a-stream',
     title: 'Kth Largest Element in a Stream',
     difficulty: 'Easy',
@@ -402,9 +430,11 @@ class Solution {
       'Design a class to find the kth largest element in a stream. Note that it is the kth largest element in the sorted order, not the kth distinct element. Implement the KthLargest class with a constructor and an add method.',
     examples: [
       {
-        input: '[["KthLargest", "add", "add", "add", "add", "add"], [[3, [4,5,8,2]], [3], [5], [10], [9], [4]]]',
+        input:
+          '[["KthLargest", "add", "add", "add", "add", "add"], [[3, [4,5,8,2]], [3], [5], [10], [9], [4]]]',
         output: '[null, 4, 5, 5, 8, 8]',
-        explanation: 'The stream keeps track of the 3rd largest value after each add call.',
+        explanation:
+          'The stream keeps track of the 3rd largest value after each add call.',
       },
     ],
     hints: [
@@ -424,6 +454,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 18,
     id: 'top-k-frequent-elements',
     title: 'Top K Frequent Elements',
     difficulty: 'Medium',
@@ -434,7 +465,8 @@ class Solution {
       {
         input: 'nums = [1,1,1,2,2,3], k = 2',
         output: '[1,2]',
-        explanation: '1 appears three times and 2 appears twice, making them the top two most frequent elements.',
+        explanation:
+          '1 appears three times and 2 appears twice, making them the top two most frequent elements.',
       },
     ],
     hints: [
@@ -449,6 +481,7 @@ class Solution {
 }`,
   },
   {
+    dbId: 19,
     id: 'merge-k-sorted-lists',
     title: 'Merge k Sorted Lists',
     difficulty: 'Hard',
@@ -459,7 +492,8 @@ class Solution {
       {
         input: 'lists = [[1,4,5],[1,3,4],[2,6]]',
         output: '[1,1,2,3,4,4,5,6]',
-        explanation: 'Merging all sorted linked lists produces one sorted linked list.',
+        explanation:
+          'Merging all sorted linked lists produces one sorted linked list.',
       },
     ],
     hints: [

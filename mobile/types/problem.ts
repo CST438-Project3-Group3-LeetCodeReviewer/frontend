@@ -9,6 +9,7 @@ export type Example = {
 };
 
 export type Problem = {
+  dbId: number;
   id: string;
   title: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';

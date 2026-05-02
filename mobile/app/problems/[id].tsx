@@ -19,7 +19,11 @@ const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 
-//This is the route that displays the individual problems by id and uses mockProblems.ts
+// Replace this with the authenticated user's real UUID.
+// Using an integer like 1 is incorrect because your schema expects UUID. 
+const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
+
+// This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string | string[] }>();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
@@ -29,8 +33,10 @@ export default function ProblemDetailScreen() {
     () => (id ? MOCK_PROBLEMS.findIndex((p) => p.id === id) : -1),
     [id],
   );
+
   const prevProblem =
     problemIndex > 0 ? MOCK_PROBLEMS[problemIndex - 1] : undefined;
+
   const nextProblem =
     problemIndex >= 0 && problemIndex < MOCK_PROBLEMS.length - 1
       ? MOCK_PROBLEMS[problemIndex + 1]
@@ -40,7 +46,6 @@ export default function ProblemDetailScreen() {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
-  const [aiFeedbackOutput, setAiFeedbackOutput] = useState('AI feedback placeholder.');
 
   useEffect(() => {
     if (!problem) return;
@@ -61,122 +66,54 @@ export default function ProblemDetailScreen() {
     return () => clearInterval(timer);
   }, []);
 
-//Creates the timer on the page
-  function formatTime(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return [hours, minutes, seconds]
-      .map((n) => String(n).padStart(2, '0'))
-      .join(':');
-  }
-
   function handleRunCode() {
-    setTestOutput('Mock test run complete. Your code executed against sample test cases.');
+    setTestOutput(
+      'Mock test run complete. Your code executed against sample test cases.',
+    );
     setComplexityOutput('Mock estimate: Time O(n), Space O(n)');
   }
 
   async function handleSubmit() {
-    // setAiFeedbackOutput(
-    //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
-    // );
-    // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
-    // try {
-    //   // http://10.0.2.2:8080/api/submissions
-    //   const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
-    //     method: "POST",
-    //     headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     // problemId: id,
-    //     // code: code,
-    //     // userId: 1,
-    //     userId: "some-uuid", // MUST be UUID 
-    //     feedbackText: "temp feedback",
-    //     score: 100
-    //   }),
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error("Submission failed");
-    // }
-
-    // const data = await response.json();
-
-    // router.push({
-    // pathname: "/(tabs)/feedback",
-    // params: { submissionId: data.id },
-    // });
-
-    // } catch (error: any) {
-    //   console.error(error);
-    //   Alert.alert("Error", "Submission failed");
-    // }
-
-  //   try {
-  //   const response = await fetch(`http://10.0.2.2:8080/api/submissions`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       problemId: Number(id),
-  //       code: code,
-  //       userId: 1,
-  //       status: "Submitted",
-  //       timeTaken: secondsElapsed,
-  //     }),
-  //   });
-
-  //   if (!response.ok) {
-  //     const errorText = await response.text();
-  //     throw new Error(`Submission failed: ${response.status} ${errorText}`);
-  //   }
-
-  //   const submission = await response.json();
-
-  //   router.push({
-  //     pathname: "/(tabs)/feedback",
-  //     params: { submissionId: String(submission.id) },
-  //   });
-  // } catch (error: any) {
-  //   console.error(error);
-  //   Alert.alert("Error", "Submission failed. Check the console/logs.");
-  // }
-
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/submissions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        problemId: Number(id),
-        code: code,
-        userId: 1,
-        status: "Submitted",
-        timeTaken: secondsElapsed,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Submission failed: ${response.status} ${errorText}`);
+    if (!problem) {
+      Alert.alert('Error', 'Problem not found.');
+      return;
     }
 
-    const submission = await response.json();
+    const submissionPayload = {
+      problemId: problem.dbId,
+      code,
+      userId: DEMO_USER_ID,
+      status: 'Submitted',
+      timeTaken: secondsElapsed,
+    };
 
-    router.push({
-      pathname: "/(tabs)/feedback",
-      params: { submissionId: String(submission.id) },
-    });
-  } catch (error: any) {
-    console.error(error);
-    Alert.alert("Error", "Submission failed. Check the console.");
-  }
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionPayload),
+      });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Submission failed: ${response.status} ${errorText}`);
+      }
+
+      const submission = await response.json();
+
+      router.push({
+        pathname: '/(tabs)/feedback',
+        params: { submissionId: String(submission.id) },
+      });
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert(
+        'Error',
+        'Submission failed. Check the console and make sure userId is a real UUID from your users table.',
+      );
+    }
   }
 
   if (!problem) {
@@ -192,7 +129,6 @@ export default function ProblemDetailScreen() {
 
   return (
     <>
-      {/* //Grabs the title from mockProblems */}
       <Stack.Screen options={{ title: problem.title }} />
       <ThemedView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -256,17 +192,19 @@ export default function ProblemDetailScreen() {
             ))}
           </View>
 
-          {/* //displays the problem information from mockProblems */}
           <Section title="Problem">
             <ThemedText>{problem.description}</ThemedText>
           </Section>
+
           <Section title="Examples">
             {problem.examples.map((example, index) => (
               <View key={index} style={styles.exampleBox}>
                 <ThemedText type="defaultSemiBold">Input:</ThemedText>
                 <ThemedText>{example.input}</ThemedText>
+
                 <ThemedText type="defaultSemiBold">Output:</ThemedText>
                 <ThemedText>{example.output}</ThemedText>
+
                 {example.explanation ? (
                   <>
                     <ThemedText type="defaultSemiBold">Explanation:</ThemedText>
@@ -283,7 +221,6 @@ export default function ProblemDetailScreen() {
             ))}
           </Section>
 
-            {/* //text box for inputting your code */}
           <Section title="Code Editor">
             <TextInput
               multiline
@@ -295,7 +232,6 @@ export default function ProblemDetailScreen() {
               textAlignVertical="top"
             />
 
-            {/* //placeholders for future integrations with code submission information */}
             <View style={styles.buttonRow}>
               <Pressable style={styles.primaryButton} onPress={handleRunCode}>
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
@@ -314,10 +250,6 @@ export default function ProblemDetailScreen() {
           <Section title="Time & Space Complexity">
             <ThemedText>{complexityOutput}</ThemedText>
           </Section>
-
-          {/* <Section title="AI Feedback">
-            <ThemedText>{aiFeedbackOutput}</ThemedText>
-          </Section> */}
         </ScrollView>
       </ThemedView>
     </>
@@ -339,7 +271,6 @@ function Section({
   );
 }
 
-//styling the page
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
