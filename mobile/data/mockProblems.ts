@@ -20,9 +20,9 @@ export const MOCK_PROBLEMS: Problem[] = [
       'Try storing values you have already seen.',
       'A hash map can help you find the complement quickly.',
     ],
-    starterCode: `function twoSum(nums, target) {
-  // Write your solution here
-}`,
+    starterCode: `def two_sum(nums, target):
+    # Write your solution here
+    pass`,
   },
   {
     id: 'valid-parentheses',
@@ -38,9 +38,9 @@ export const MOCK_PROBLEMS: Problem[] = [
       },
     ],
     hints: ['Think about the most recent opening bracket first.'],
-    starterCode: `function isValid(s) {
-  // Write your solution here
-}`,
+    starterCode: `def is_valid(s):
+    # Write your solution here
+    pass`,
   },
   {
     id: 'binary-search',
@@ -56,8 +56,8 @@ export const MOCK_PROBLEMS: Problem[] = [
       },
     ],
     hints: ['Use left, right, and middle pointers.'],
-    starterCode: `function search(nums, target) {
-  // Write your solution here
-}`,
+    starterCode: `def search(nums, target):
+    # Write your solution here
+    pass`,
   },
 ];

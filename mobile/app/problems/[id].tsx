@@ -1,8 +1,6 @@
-import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -19,6 +17,7 @@ import { ThemedView } from '@/components/themed-view';
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
+const DEFAULT_LANGUAGE = 'python';
 
 //This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
@@ -29,7 +28,8 @@ export default function ProblemDetailScreen() {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
-  const [aiFeedbackOutput, setAiFeedbackOutput] = useState('AI feedback placeholder.');
+  const [submitStatus, setSubmitStatus] = useState('Submit a solution to get Gemini feedback.');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!problem) return;
@@ -44,122 +44,62 @@ export default function ProblemDetailScreen() {
     return () => clearInterval(timer);
   }, []);
 
-//Creates the timer on the page
-  function formatTime(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return [hours, minutes, seconds]
-      .map((n) => String(n).padStart(2, '0'))
-      .join(':');
-  }
-
   function handleRunCode() {
     setTestOutput('Mock test run complete. Your code executed against sample test cases.');
     setComplexityOutput('Mock estimate: Time O(n), Space O(n)');
   }
 
   async function handleSubmit() {
-    // setAiFeedbackOutput(
-    //   'Placeholder feedback: structure is clear, but AI review and backend submission are not connected yet.'
-    // );
-    // Alert.alert('Submitted', 'Mock submission recorded for UI demo.');
-    // try {
-    //   // http://10.0.2.2:8080/api/submissions
-    //   const response = await fetch(`http://10.0.2.2:8080/submissions/${id}/feedback`, {
-    //     method: "POST",
-    //     headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     // problemId: id,
-    //     // code: code,
-    //     // userId: 1,
-    //     userId: "some-uuid", // MUST be UUID 
-    //     feedbackText: "temp feedback",
-    //     score: 100
-    //   }),
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error("Submission failed");
-    // }
-
-    // const data = await response.json();
-
-    // router.push({
-    // pathname: "/(tabs)/feedback",
-    // params: { submissionId: data.id },
-    // });
-
-    // } catch (error: any) {
-    //   console.error(error);
-    //   Alert.alert("Error", "Submission failed");
-    // }
-
-  //   try {
-  //   const response = await fetch(`http://10.0.2.2:8080/api/submissions`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       problemId: Number(id),
-  //       code: code,
-  //       userId: 1,
-  //       status: "Submitted",
-  //       timeTaken: secondsElapsed,
-  //     }),
-  //   });
-
-  //   if (!response.ok) {
-  //     const errorText = await response.text();
-  //     throw new Error(`Submission failed: ${response.status} ${errorText}`);
-  //   }
-
-  //   const submission = await response.json();
-
-  //   router.push({
-  //     pathname: "/(tabs)/feedback",
-  //     params: { submissionId: String(submission.id) },
-  //   });
-  // } catch (error: any) {
-  //   console.error(error);
-  //   Alert.alert("Error", "Submission failed. Check the console/logs.");
-  // }
-
-    try {
-    const response = await fetch(`${API_BASE_URL}/api/submissions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        problemId: Number(id),
-        code: code,
-        userId: 1,
-        status: "Submitted",
-        timeTaken: secondsElapsed,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Submission failed: ${response.status} ${errorText}`);
+    if (!code || code.trim().length < 10) {
+      setSubmitStatus('Please write a more substantial solution before submitting.');
+      return;
     }
 
-    const submission = await response.json();
+    setIsSubmitting(true);
+    setSubmitStatus(`Submitting to ${API_BASE_URL}/api/submissions...`);
 
-    router.push({
-      pathname: "/(tabs)/feedback",
-      params: { submissionId: String(submission.id) },
-    });
-  } catch (error: any) {
-    console.error(error);
-    Alert.alert("Error", "Submission failed. Check the console.");
-  }
+    try {
+      const problemIndex = MOCK_PROBLEMS.findIndex((mockProblem) => mockProblem.id === id);
+      const problemId = problemIndex >= 0 ? problemIndex + 1 : 1;
 
+      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          problemId,
+          code,
+          language: DEFAULT_LANGUAGE,
+          status: 'Submitted',
+          timeTaken: secondsElapsed,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Submission failed: ${response.status} ${errorText}`);
+      }
+
+      const submission = await response.json();
+      const reviewStatus = submission.status ?? 'Reviewed';
+
+      setSubmitStatus(`Review complete. Gemini marked this submission as ${reviewStatus}.`);
+      setTestOutput(`Submitted successfully. Status: ${reviewStatus}.`);
+
+      router.push({
+        pathname: '/(tabs)/feedback',
+        params: { submissionId: String(submission.id) },
+      });
+    } catch (error) {
+      console.error(error);
+      const message = error instanceof Error ? error.message : 'Unknown submission error.';
+      setSubmitStatus(
+        `Submission failed. Make sure the backend is running at ${API_BASE_URL}. ${message}`
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (!problem) {
@@ -226,8 +166,9 @@ export default function ProblemDetailScreen() {
             ))}
           </Section>
 
-            {/* //text box for inputting your code */}
+          {/* //text box for inputting your code */}
           <Section title="Code Editor">
+            <ThemedText>Language: Python</ThemedText>
             <TextInput
               multiline
               value={code}
@@ -244,9 +185,21 @@ export default function ProblemDetailScreen() {
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
               </Pressable>
 
-              <Pressable style={styles.secondaryButton} onPress={handleSubmit}>
-                <ThemedText type="defaultSemiBold">Submit</ThemedText>
+              <Pressable
+                style={[styles.secondaryButton, isSubmitting && styles.buttonDisabled]}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                <ThemedText type="defaultSemiBold">
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </ThemedText>
               </Pressable>
+            </View>
+          </Section>
+
+          <Section title="Submission Status">
+            <View style={styles.statusBox}>
+              <ThemedText>{submitStatus}</ThemedText>
             </View>
           </Section>
 
@@ -368,5 +321,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,
+  },
+  statusBox: {
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+    borderRadius: 10,
+    padding: 12,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
