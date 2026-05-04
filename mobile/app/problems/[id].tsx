@@ -129,6 +129,16 @@ export default function ProblemDetailScreen() {
   //   Alert.alert("Error", "Submission failed. Check the console/logs.");
   // }
 
+
+    const problemId = Number(id);
+
+    if (!Number.isInteger(problemId)) {
+      Alert.alert("Error", `Invalid problem id: ${id}`);
+      return;
+    }
+    // testing
+    const DEMO_USER_ID = "24553297-c1b9-429c-a770-1ddb08101540";
+
     try {
     const response = await fetch(`${API_BASE_URL}/api/submissions`, {
       method: "POST",
@@ -136,12 +146,12 @@ export default function ProblemDetailScreen() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        problemId: Number(id),
-        code: code,
-        userId: 1,
-        status: "Submitted",
-        timeTaken: secondsElapsed,
-      }),
+      problemId: problemId,
+      code: code,
+      userId: DEMO_USER_ID,
+      status: "Submitted",
+      timeTaken: secondsElapsed,
+    }),
     });
 
     if (!response.ok) {
@@ -152,7 +162,7 @@ export default function ProblemDetailScreen() {
     const submission = await response.json();
 
     router.push({
-      pathname: "/(tabs)/feedback",
+      pathname: "/feedback",
       params: { submissionId: String(submission.id) },
     });
   } catch (error: any) {

@@ -3,7 +3,7 @@ import { Problem } from '@/types/problem';
 //This is the list of all the problems rendered on the /problems/{id} page
 export const MOCK_PROBLEMS: Problem[] = [
   {
-    id: 'two-sum',
+    id: '1',
     title: 'Two Sum',
     difficulty: 'Easy',
     category: ['Array', 'Hash Map'],
@@ -25,7 +25,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
-    id: 'valid-parentheses',
+    id: '2',
     title: 'Valid Parentheses',
     difficulty: 'Easy',
     category: ['Stack', 'String'],
@@ -43,7 +43,7 @@ export const MOCK_PROBLEMS: Problem[] = [
 }`,
   },
   {
-    id: 'binary-search',
+    id: '3',
     title: 'Binary Search',
     difficulty: 'Easy',
     category: ['Array', 'Binary Search'],
