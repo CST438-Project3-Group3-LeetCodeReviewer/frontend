@@ -176,7 +176,9 @@ export default function ProblemDetailScreen() {
 
           {/* //text box for inputting your code */}
           <Section title="Code Editor">
-            <ThemedText>Language: Python</ThemedText>
+            <ThemedText>
+              Language: {DEFAULT_LANGUAGE.charAt(0).toUpperCase() + DEFAULT_LANGUAGE.slice(1)}
+            </ThemedText>
             <TextInput
               multiline
               value={code}
