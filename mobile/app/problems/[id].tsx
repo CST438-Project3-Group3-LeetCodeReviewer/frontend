@@ -19,10 +19,30 @@ const API_BASE_URL =
   (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 const DEFAULT_LANGUAGE = 'python';
 
-//This is the route that displays the individual problems by id and uses mockProblems.ts
+// Temporary demo user ID for local/testing submissions.
+// Once auth/session user data is connected, remove this constant and
+// replace `userId: DEMO_USER_ID` in the submissionPayload (around line 85)
+// with the authenticated user's real UUID.
+const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
+
+// This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const problem = useMemo(() => getProblemById(id), [id]);
+  const { id: rawId } = useLocalSearchParams<{ id: string | string[] }>();
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const problem = useMemo(() => (id ? getProblemById(id) : undefined), [id]);
+
+  const problemIndex = useMemo(
+    () => (id ? MOCK_PROBLEMS.findIndex((p) => p.id === id) : -1),
+    [id],
+  );
+
+  const prevProblem =
+    problemIndex > 0 ? MOCK_PROBLEMS[problemIndex - 1] : undefined;
+
+  const nextProblem =
+    problemIndex >= 0 && problemIndex < MOCK_PROBLEMS.length - 1
+      ? MOCK_PROBLEMS[problemIndex + 1]
+      : undefined;
 
   const [code, setCode] = useState(problem?.starterCode ?? '');
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -37,6 +57,12 @@ export default function ProblemDetailScreen() {
   }, [problem]);
 
   useEffect(() => {
+    setSecondsElapsed(0);
+    setTestOutput('No tests run yet.');
+    setComplexityOutput('Not analyzed yet.');
+  }, [id]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setSecondsElapsed((prev) => prev + 1);
     }, 1000);
@@ -45,43 +71,33 @@ export default function ProblemDetailScreen() {
   }, []);
 
   function handleRunCode() {
-    setTestOutput('Mock test run complete. Your code executed against sample test cases.');
+    setTestOutput(
+      'Mock test run complete. Your code executed against sample test cases.',
+    );
     setComplexityOutput('Mock estimate: Time O(n), Space O(n)');
   }
 
   async function handleSubmit() {
-    const normalizedCode = code?.trim() ?? '';
-    const normalizedStarterCode = problem?.starterCode?.trim() ?? '';
-
-    if (!normalizedCode || normalizedCode.length < 10) {
-      setSubmitStatus('Please write a more substantial solution before submitting.');
+    if (!problem) {
+      Alert.alert('Error', 'Problem not found.');
       return;
     }
 
-    if (normalizedStarterCode && normalizedCode === normalizedStarterCode) {
-      setSubmitStatus('Please modify the starter code with your solution before submitting.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setSubmitStatus(`Submitting to ${API_BASE_URL}/api/submissions...`);
+    const submissionPayload = {
+      problemId: problem.dbId,
+      code,
+      userId: DEMO_USER_ID,
+      status: 'Submitted',
+      timeTaken: secondsElapsed,
+    };
 
     try {
-      const problemIndex = MOCK_PROBLEMS.findIndex((mockProblem) => mockProblem.id === id);
-      const problemId = problemIndex >= 0 ? problemIndex + 1 : 1;
-
       const response = await fetch(`${API_BASE_URL}/api/submissions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          problemId,
-          code,
-          language: DEFAULT_LANGUAGE,
-          status: 'Submitted',
-          timeTaken: secondsElapsed,
-        }),
+        body: JSON.stringify(submissionPayload),
       });
 
       if (!response.ok) {
@@ -123,7 +139,6 @@ export default function ProblemDetailScreen() {
 
   return (
     <>
-      {/* //Grabs the title from mockProblems */}
       <Stack.Screen options={{ title: problem.title }} />
       <ThemedView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -139,6 +154,46 @@ export default function ProblemDetailScreen() {
             </View>
           </View>
 
+          <View style={styles.problemNavRow}>
+            <Pressable
+              onPress={() =>
+                prevProblem && router.replace(`/problems/${prevProblem.id}`)
+              }
+              disabled={!prevProblem}
+              style={({ pressed }) => [
+                styles.problemNavButton,
+                !prevProblem && styles.problemNavButtonDisabled,
+                pressed && prevProblem && styles.problemNavButtonPressed,
+              ]}>
+              <ThemedText
+                style={!prevProblem ? styles.problemNavLabelDisabled : undefined}>
+                ← Previous
+              </ThemedText>
+            </Pressable>
+
+            {problemIndex >= 0 ? (
+              <ThemedText style={styles.problemNavPosition}>
+                {problemIndex + 1} / {MOCK_PROBLEMS.length}
+              </ThemedText>
+            ) : null}
+
+            <Pressable
+              onPress={() =>
+                nextProblem && router.replace(`/problems/${nextProblem.id}`)
+              }
+              disabled={!nextProblem}
+              style={({ pressed }) => [
+                styles.problemNavButton,
+                !nextProblem && styles.problemNavButtonDisabled,
+                pressed && nextProblem && styles.problemNavButtonPressed,
+              ]}>
+              <ThemedText
+                style={!nextProblem ? styles.problemNavLabelDisabled : undefined}>
+                Next →
+              </ThemedText>
+            </Pressable>
+          </View>
+
           <View style={styles.tagRow}>
             {problem.category.map((tag) => (
               <View key={tag} style={styles.tag}>
@@ -147,17 +202,19 @@ export default function ProblemDetailScreen() {
             ))}
           </View>
 
-          {/* //displays the problem information from mockProblems */}
           <Section title="Problem">
             <ThemedText>{problem.description}</ThemedText>
           </Section>
+
           <Section title="Examples">
             {problem.examples.map((example, index) => (
               <View key={index} style={styles.exampleBox}>
                 <ThemedText type="defaultSemiBold">Input:</ThemedText>
                 <ThemedText>{example.input}</ThemedText>
+
                 <ThemedText type="defaultSemiBold">Output:</ThemedText>
                 <ThemedText>{example.output}</ThemedText>
+
                 {example.explanation ? (
                   <>
                     <ThemedText type="defaultSemiBold">Explanation:</ThemedText>
@@ -174,7 +231,6 @@ export default function ProblemDetailScreen() {
             ))}
           </Section>
 
-          {/* //text box for inputting your code */}
           <Section title="Code Editor">
             <ThemedText>
               Language: {DEFAULT_LANGUAGE.charAt(0).toUpperCase() + DEFAULT_LANGUAGE.slice(1)}
@@ -189,7 +245,6 @@ export default function ProblemDetailScreen() {
               textAlignVertical="top"
             />
 
-            {/* //placeholders for future integrations with code submission information */}
             <View style={styles.buttonRow}>
               <Pressable style={styles.primaryButton} onPress={handleRunCode}>
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
@@ -220,10 +275,6 @@ export default function ProblemDetailScreen() {
           <Section title="Time & Space Complexity">
             <ThemedText>{complexityOutput}</ThemedText>
           </Section>
-
-          {/* <Section title="AI Feedback">
-            <ThemedText>{aiFeedbackOutput}</ThemedText>
-          </Section> */}
         </ScrollView>
       </ThemedView>
     </>
@@ -245,7 +296,6 @@ function Section({
   );
 }
 
-//styling the page
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   content: {
@@ -265,6 +315,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     alignItems: 'flex-start',
+  },
+  problemNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  problemNavButton: {
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexShrink: 1,
+  },
+  problemNavButtonDisabled: {
+    borderColor: '#3A3A3A',
+    opacity: 0.45,
+  },
+  problemNavButtonPressed: {
+    opacity: 0.85,
+  },
+  problemNavLabelDisabled: {
+    opacity: 0.7,
+  },
+  problemNavPosition: {
+    opacity: 0.85,
   },
   timerCard: {
     minWidth: 110,
