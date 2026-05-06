@@ -1,31 +1,18 @@
-import { supabase } from './supabase';
+import { Platform } from 'react-native';
 
-const BACKEND_URL = 'http://localhost:8080';
+import { supabase } from '@/lib/supabase';
 
-export async function callBackendEndpoint(endpoint: string, method: string = 'GET', body?: any) {
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
+
+export async function getAuthHeaders(): Promise<HeadersInit> {
   const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    throw new Error('No session found');
-  }
-
-  const options: RequestInit = {
-    method,
-    headers: {
-      'Authorization': `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    },
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
   };
-
-  if (body) {
-    options.body = JSON.stringify(body);
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
   }
-
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, options);
-
-  if (!response.ok) {
-    throw new Error(`Backend error: ${response.status}`);
-  }
-
-  return response.json();
+  return headers;
 }

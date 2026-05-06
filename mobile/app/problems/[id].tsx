@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import {
-  Platform,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,17 +13,10 @@ import { formatElapsedTime, getProblemById } from '@/utils/problemHelpers';
 import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { API_BASE_URL, getAuthHeaders } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ??
-  (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 const DEFAULT_LANGUAGE = 'python';
-
-// Temporary demo user ID for local/testing submissions.
-// Once auth/session user data is connected, remove this constant and
-// replace `userId: DEMO_USER_ID` in the submissionPayload (around line 85)
-// with the authenticated user's real UUID.
-const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
 
 // This is the route that displays the individual problems by id and uses mockProblems.ts
 export default function ProblemDetailScreen() {
@@ -48,7 +41,6 @@ export default function ProblemDetailScreen() {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
-  const [aiFeedbackOutput, setAiFeedbackOutput] = useState('AI feedback placeholder.');
   const [submitStatus, setSubmitStatus] = useState('Submit a solution to get Gemini feedback.');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,78 +71,38 @@ export default function ProblemDetailScreen() {
   }
 
   async function handleSubmit() {
-    if (!code || code.trim().length < 10) {
-      Alert.alert('Incomplete', 'Please write a more substantial solution before submitting.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          problemId: Number(id) || 1, // Fallback for testing
-          code: code,
-          userId: 1, // Hardcoded user for now
-          status: "Submitted",
-          timeTaken: secondsElapsed,
-        }),
-        buttonDisabled: {
-    opacity: 0.5,
-  },
-});
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Submission failed: ${response.status} ${errorText}`);
-      }
-
-      const submission = await response.json();
-
-      Alert.alert('Success', 'Your solution has been submitted and analyzed!', [
-        {
-          text: 'View Feedback',
-          onPress: () => {
-            router.push({
-              pathname: "/(tabs)/feedback",
-              params: { submissionId: String(submission.id) },
-              buttonDisabled: {
-    opacity: 0.5,
-  },
-});
-          }
-        }
-      ]);
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Submission Error", "Could not connect to the backend. Is your server running?");
-    } finally {
-      setIsSubmitting(false);
-    }
     if (!problem) {
       Alert.alert('Error', 'Problem not found.');
       return;
     }
 
-    const submissionPayload = {
-      problemId: problem.dbId,
-      code,
-      userId: DEMO_USER_ID,
-      status: 'Submitted',
-      timeTaken: secondsElapsed,
-    };
+    if (!code || code.trim().length < 10) {
+      setSubmitStatus('Please write a more substantial solution before submitting.');
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) {
+      setSubmitStatus('Sign in is required to submit and attach submissions to your profile.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(`Submitting to ${API_BASE_URL}/api/submissions...`);
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/submissions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submissionPayload),
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({
+          problemId: problem.dbId,
+          code,
+          language: DEFAULT_LANGUAGE,
+          userId,
+          status: 'Submitted',
+          timeTaken: secondsElapsed,
+        }),
       });
 
       if (!response.ok) {
@@ -161,7 +113,7 @@ export default function ProblemDetailScreen() {
       const submission = await response.json();
       const reviewStatus = submission.status ?? 'Reviewed';
 
-      setSubmitStatus(`Review complete. Gemini marked this submission as ${reviewStatus}.`);
+      setSubmitStatus(`Review complete. Status: ${reviewStatus}.`);
       setTestOutput(`Submitted successfully. Status: ${reviewStatus}.`);
 
       router.push({

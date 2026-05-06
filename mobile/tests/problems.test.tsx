@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react-native';
 
-import ProblemsScreen from '../problems';
+import ProblemsScreen from '../app/(tabs)/problems';
 
 jest.mock('expo-router', () => ({
   router: {
