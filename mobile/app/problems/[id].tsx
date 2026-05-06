@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import {
-  Platform,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,10 +13,9 @@ import { formatElapsedTime, getProblemById } from '@/utils/problemHelpers';
 import { MOCK_PROBLEMS } from '@/data/mockProblems';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { stashFeedbackCodeForReview } from '@/lib/feedback-handoff';
+import { API_BASE_URL } from '@/lib/api';
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ??
-  (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
 const DEFAULT_LANGUAGE = 'python';
 
 // Temporary demo user ID for local/testing submissions.
@@ -79,72 +78,31 @@ export default function ProblemDetailScreen() {
   }
 
   async function handleSubmit() {
+    if (!problem) {
+      Alert.alert('Error', 'Problem not found.');
+      return;
+    }
+
     if (!code || code.trim().length < 10) {
       Alert.alert('Incomplete', 'Please write a more substantial solution before submitting.');
       return;
     }
 
     setIsSubmitting(true);
+    setSubmitStatus(`Submitting to ${API_BASE_URL}/api/submissions…`);
+
+    const trimmed = code.trim();
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          problemId: Number(id) || 1, // Fallback for testing
-          code: code,
-          userId: 1, // Hardcoded user for now
-          status: "Submitted",
-          timeTaken: secondsElapsed,
-        }),
-        buttonDisabled: {
-    opacity: 0.5,
-  },
-});
+      const submissionPayload = {
+        problemId: problem.dbId,
+        code: trimmed,
+        language: DEFAULT_LANGUAGE,
+        userId: DEMO_USER_ID,
+        status: 'Submitted',
+        timeTaken: secondsElapsed,
+      };
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Submission failed: ${response.status} ${errorText}`);
-      }
-
-      const submission = await response.json();
-
-      Alert.alert('Success', 'Your solution has been submitted and analyzed!', [
-        {
-          text: 'View Feedback',
-          onPress: () => {
-            router.push({
-              pathname: "/(tabs)/feedback",
-              params: { submissionId: String(submission.id) },
-              buttonDisabled: {
-    opacity: 0.5,
-  },
-});
-          }
-        }
-      ]);
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Submission Error", "Could not connect to the backend. Is your server running?");
-    } finally {
-      setIsSubmitting(false);
-    }
-    if (!problem) {
-      Alert.alert('Error', 'Problem not found.');
-      return;
-    }
-
-    const submissionPayload = {
-      problemId: problem.dbId,
-      code,
-      userId: DEMO_USER_ID,
-      status: 'Submitted',
-      timeTaken: secondsElapsed,
-    };
-
-    try {
       const response = await fetch(`${API_BASE_URL}/api/submissions`, {
         method: 'POST',
         headers: {
@@ -155,7 +113,7 @@ export default function ProblemDetailScreen() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Submission failed: ${response.status} ${errorText}`);
+        throw new Error(`${response.status} ${errorText}`);
       }
 
       const submission = await response.json();
@@ -164,9 +122,12 @@ export default function ProblemDetailScreen() {
       setSubmitStatus(`Review complete. Gemini marked this submission as ${reviewStatus}.`);
       setTestOutput(`Submitted successfully. Status: ${reviewStatus}.`);
 
+      const sid = String(submission.id);
+      stashFeedbackCodeForReview(sid, trimmed);
+
       router.push({
         pathname: '/(tabs)/feedback',
-        params: { submissionId: String(submission.id) },
+        params: { submissionId: sid },
       });
     } catch (error) {
       console.error(error);
@@ -174,6 +135,7 @@ export default function ProblemDetailScreen() {
       setSubmitStatus(
         `Submission failed. Make sure the backend is running at ${API_BASE_URL}. ${message}`
       );
+      Alert.alert('Submission Error', `Could not complete submission.\n${message}`);
     } finally {
       setIsSubmitting(false);
     }
