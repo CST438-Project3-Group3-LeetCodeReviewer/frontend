@@ -50,8 +50,16 @@ export default function ProblemDetailScreen() {
   }
 
   async function handleSubmit() {
-    if (!code || code.trim().length < 10) {
+    const normalizedCode = code?.trim() ?? '';
+    const normalizedStarterCode = problem?.starterCode?.trim() ?? '';
+
+    if (!normalizedCode || normalizedCode.length < 10) {
       setSubmitStatus('Please write a more substantial solution before submitting.');
+      return;
+    }
+
+    if (normalizedStarterCode && normalizedCode === normalizedStarterCode) {
+      setSubmitStatus('Please modify the starter code with your solution before submitting.');
       return;
     }
 
