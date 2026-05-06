@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import {
-  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -18,6 +17,7 @@ import { ThemedView } from '@/components/themed-view';
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   (Platform.OS === 'web' ? 'http://localhost:8080' : 'http://10.0.2.2:8080');
+const DEFAULT_LANGUAGE = 'python';
 
 // Temporary demo user ID for local/testing submissions.
 // Once auth/session user data is connected, remove this constant and
@@ -48,6 +48,8 @@ export default function ProblemDetailScreen() {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
+  const [submitStatus, setSubmitStatus] = useState('Submit a solution to get Gemini feedback.');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!problem) return;
@@ -104,17 +106,23 @@ export default function ProblemDetailScreen() {
       }
 
       const submission = await response.json();
+      const reviewStatus = submission.status ?? 'Reviewed';
+
+      setSubmitStatus(`Review complete. Gemini marked this submission as ${reviewStatus}.`);
+      setTestOutput(`Submitted successfully. Status: ${reviewStatus}.`);
 
       router.push({
         pathname: '/(tabs)/feedback',
         params: { submissionId: String(submission.id) },
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      Alert.alert(
-        'Error',
-        'Submission failed. Check the console and make sure userId is a real UUID from your users table.',
+      const message = error instanceof Error ? error.message : 'Unknown submission error.';
+      setSubmitStatus(
+        `Submission failed. Make sure the backend is running at ${API_BASE_URL}. ${message}`
       );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -224,6 +232,9 @@ export default function ProblemDetailScreen() {
           </Section>
 
           <Section title="Code Editor">
+            <ThemedText>
+              Language: {DEFAULT_LANGUAGE.charAt(0).toUpperCase() + DEFAULT_LANGUAGE.slice(1)}
+            </ThemedText>
             <TextInput
               multiline
               value={code}
@@ -239,9 +250,21 @@ export default function ProblemDetailScreen() {
                 <ThemedText type="defaultSemiBold">Run Code</ThemedText>
               </Pressable>
 
-              <Pressable style={styles.secondaryButton} onPress={handleSubmit}>
-                <ThemedText type="defaultSemiBold">Submit</ThemedText>
+              <Pressable
+                style={[styles.secondaryButton, isSubmitting && styles.buttonDisabled]}
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+              >
+                <ThemedText type="defaultSemiBold">
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </ThemedText>
               </Pressable>
+            </View>
+          </Section>
+
+          <Section title="Submission Status">
+            <View style={styles.statusBox}>
+              <ThemedText>{submitStatus}</ThemedText>
             </View>
           </Section>
 
@@ -385,5 +408,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 14,
+  },
+  statusBox: {
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+    borderRadius: 10,
+    padding: 12,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });

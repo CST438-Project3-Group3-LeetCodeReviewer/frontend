@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator,Platform ,StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -41,9 +41,7 @@ export default function FeedbackScreen() {
     try {
       if (!submissionId) return;
 
-      const res = await fetch(
-        `${API_BASE_URL}/submissions/${submissionId}/feedback`
-      );
+      const res = await fetch(`${API_BASE_URL}/api/submissions/${submissionId}/feedback`);
 
       if (!res.ok) {
         throw new Error(`Feedback request failed: ${res.status}`);
