@@ -48,6 +48,7 @@ export default function ProblemDetailScreen() {
   const [secondsElapsed, setSecondsElapsed] = useState(0);
   const [testOutput, setTestOutput] = useState('No tests run yet.');
   const [complexityOutput, setComplexityOutput] = useState('Not analyzed yet.');
+  const [aiFeedbackOutput, setAiFeedbackOutput] = useState('AI feedback placeholder.');
   const [submitStatus, setSubmitStatus] = useState('Submit a solution to get Gemini feedback.');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,6 +79,58 @@ export default function ProblemDetailScreen() {
   }
 
   async function handleSubmit() {
+    if (!code || code.trim().length < 10) {
+      Alert.alert('Incomplete', 'Please write a more substantial solution before submitting.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/submissions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemId: Number(id) || 1, // Fallback for testing
+          code: code,
+          userId: 1, // Hardcoded user for now
+          status: "Submitted",
+          timeTaken: secondsElapsed,
+        }),
+        buttonDisabled: {
+    opacity: 0.5,
+  },
+});
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Submission failed: ${response.status} ${errorText}`);
+      }
+
+      const submission = await response.json();
+
+      Alert.alert('Success', 'Your solution has been submitted and analyzed!', [
+        {
+          text: 'View Feedback',
+          onPress: () => {
+            router.push({
+              pathname: "/(tabs)/feedback",
+              params: { submissionId: String(submission.id) },
+              buttonDisabled: {
+    opacity: 0.5,
+  },
+});
+          }
+        }
+      ]);
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Submission Error", "Could not connect to the backend. Is your server running?");
+    } finally {
+      setIsSubmitting(false);
+    }
     if (!problem) {
       Alert.alert('Error', 'Problem not found.');
       return;
